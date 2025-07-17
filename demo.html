@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Translation Tool Demo - Phiên bản đơn giản</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(66, 133, 244, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result {
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+
+        .result h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .result-text {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #4285f4;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4285f4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border: 2px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .success {
+            background: #efe;
+            border: 2px solid #cfc;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .language-card {
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .language-card:hover {
+            border-color: #4285f4;
+            background: #e8f4fd;
+        }
+
+        .language-card.selected {
+            border-color: #4285f4;
+            background: #4285f4;
+            color: white;
+        }
+
+        .api-section {
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .api-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .api-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .model-section {
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .model-option {
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .model-option:hover {
+            border-color: #4285f4;
+            background: #e8f4fd;
+        }
+
+        .model-option.selected {
+            border-color: #4285f4;
+            background: #4285f4;
+            color: white;
+        }
+
+        .model-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .model-details {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .cost-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .cost-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .cost-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .cost-low {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .provider-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .provider-google {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .provider-openai {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .current-model-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .feature-info {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feature-info h3 {
+            color: #e65100;
+            margin-bottom: 10px;
+        }
+
+        .feature-info ul {
+            margin-left: 20px;
+        }
+
+        .feature-info li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Translation Tool Demo</h1>
+            <p>Tool dịch text sử dụng Gemini/Gemma/GPT API - Phiên bản đơn giản</p>
+        </div>
+
+        <div class="content">
+            <!-- Feature Info -->
+            <div class="feature-info">
+                <h3>📋 Tính năng hiện tại:</h3>
+                <ul>
+                    <li>✅ Dịch vùng được chọn trong Google Sheets</li>
+                    <li>✅ Hỗ trợ nhiều models: Gemini, Gemma, GPT-4o, GPT-4o Mini, GPT-3.5 Turbo</li>
+                    <li>✅ Bảo mật API Keys trong User Properties</li>
+                    <li>✅ Chunking tối ưu để giảm API calls</li>
+                    <li>✅ Retry logic tự động</li>
+                </ul>
+            </div>
+
+            <!-- API Keys Section -->
+            <div class="section">
+                <h2>🔑 Cài đặt API Keys</h2>
+                
+                <div class="api-section">
+                    <div class="api-title">🤖 Google Gemini API</div>
+                    <div class="api-description">Sử dụng cho Gemini và Gemma models</div>
+                    <div class="form-group">
+                        <label for="geminiApiKey">Gemini API Key:</label>
+                        <input type="password" id="geminiApiKey" placeholder="Nhập Gemini API Key của bạn">
+                    </div>
+                </div>
+                
+                <div class="api-section">
+                    <div class="api-title">🧠 OpenAI GPT API</div>
+                    <div class="api-description">Sử dụng cho GPT models</div>
+                    <div class="form-group">
+                        <label for="openaiApiKey">OpenAI API Key:</label>
+                        <input type="password" id="openaiApiKey" placeholder="Nhập OpenAI API Key của bạn">
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="saveApiKeys()">Lưu API Keys</button>
+                <div id="apiKeyStatus"></div>
+            </div>
+
+            <!-- Model Selection Section -->
+            <div class="section">
+                <h2>🤖 Chọn Model AI</h2>
+                <div class="model-section">
+                    <div class="current-model-info" id="currentModelInfo">
+                        Model hiện tại: <strong>Gemma 3 4B IT</strong> (Tiết kiệm)
+                    </div>
+                    
+                    <div class="model-option" data-model="gpt-4o" onclick="selectModel(this)">
+                        <div class="model-name">
+                            GPT-4o
+                            <span class="cost-badge cost-high">Chi phí cao</span>
+                            <span class="provider-badge provider-openai">OpenAI</span>
+                        </div>
+                        <div class="model-details">Chất lượng dịch tốt nhất, phù hợp cho nội dung quan trọng</div>
+                    </div>
+                    
+                    <div class="model-option" data-model="gpt-4o-mini" onclick="selectModel(this)">
+                        <div class="model-name">
+                            GPT-4o Mini
+                            <span class="cost-badge cost-medium">Chi phí trung bình</span>
+                            <span class="provider-badge provider-openai">OpenAI</span>
+                        </div>
+                        <div class="model-details">Cân bằng giữa chất lượng và chi phí</div>
+                    </div>
+                    
+                    <div class="model-option" data-model="gpt-3.5-turbo" onclick="selectModel(this)">
+                        <div class="model-name">
+                            GPT-3.5 Turbo
+                            <span class="cost-badge cost-low">Tiết kiệm</span>
+                            <span class="provider-badge provider-openai">OpenAI</span>
+                        </div>
+                        <div class="model-details">Chi phí thấp, phù hợp cho dịch thuật thường xuyên</div>
+                    </div>
+                    
+                    <div class="model-option" data-model="gemini-2.0-flash-lite" onclick="selectModel(this)">
+                        <div class="model-name">
+                            Gemini 2.0 Flash Lite
+                            <span class="cost-badge cost-high">Chi phí cao</span>
+                            <span class="provider-badge provider-google">Google</span>
+                        </div>
+                        <div class="model-details">Chất lượng dịch tốt nhất từ Google</div>
+                    </div>
+                    
+                    <div class="model-option selected" data-model="gemma-3-4b-it" onclick="selectModel(this)">
+                        <div class="model-name">
+                            Gemma 3 4B IT
+                            <span class="cost-badge cost-low">Tiết kiệm</span>
+                            <span class="provider-badge provider-google">Google</span>
+                        </div>
+                        <div class="model-details">Chi phí thấp, chất lượng tốt từ Google</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Translation Section -->
+            <div class="section">
+                <h2>🌍 Dịch Text (Demo)</h2>
+                <div class="grid">
+                    <div>
+                        <div class="form-group">
+                            <label for="sourceText">Text cần dịch:</label>
+                            <textarea id="sourceText" placeholder="Nhập text cần dịch...">Hello, how are you? This is a test message for translation.</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Chọn ngôn ngữ đích:</label>
+                            <div class="language-grid">
+                                <div class="language-card selected" data-lang="Vietnamese" onclick="selectLanguage(this)">
+                                    <strong>Tiếng Việt</strong><br>
+                                    <small>Vietnamese</small>
+                                </div>
+                                <div class="language-card" data-lang="English" onclick="selectLanguage(this)">
+                                    <strong>Tiếng Anh</strong><br>
+                                    <small>English</small>
+                                </div>
+                                <div class="language-card" data-lang="Chinese" onclick="selectLanguage(this)">
+                                    <strong>Tiếng Trung</strong><br>
+                                    <small>中文</small>
+                                </div>
+                                <div class="language-card" data-lang="Japanese" onclick="selectLanguage(this)">
+                                    <strong>Tiếng Nhật</strong><br>
+                                    <small>日本語</small>
+                                </div>
+                                <div class="language-card" data-lang="Korean" onclick="selectLanguage(this)">
+                                    <strong>Tiếng Hàn</strong><br>
+                                    <small>한국어</small>
+                                </div>
+                                <div class="language-card" data-lang="French" onclick="selectLanguage(this)">
+                                    <strong>Tiếng Pháp</strong><br>
+                                    <small>Français</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn" onclick="translateText()" id="translateBtn">Dịch Text</button>
+                    </div>
+                    
+                    <div>
+                        <div class="result">
+                            <h3>Kết quả dịch:</h3>
+                            <div id="translationResult" class="result-text">
+                                Kết quả dịch sẽ hiển thị ở đây...
+                            </div>
+                        </div>
+                        
+                        <div class="loading" id="loading">
+                            <div class="spinner"></div>
+                            <p>Đang dịch...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Section -->
+            <div class="section">
+                <h2>🧪 Test API</h2>
+                <p>Kiểm tra kết nối với API:</p>
+                <button class="btn" onclick="testApi()">Test API Connection</button>
+                <div id="testResult"></div>
+            </div>
+
+            <!-- Instructions Section -->
+            <div class="section">
+                <h2>📖 Hướng dẫn sử dụng</h2>
+                <div class="feature-info">
+                    <h3>🚀 Cách sử dụng trong Google Sheets:</h3>
+                    <ol>
+                        <li>Mở Google Sheets và tạo Apps Script</li>
+                        <li>Copy code từ file <code>Code_Simple.gs</code></li>
+                        <li>Chạy function <code>onOpen()</code> để tạo menu</li>
+                        <li>Sử dụng menu "Cài đặt API Key" để cấu hình</li>
+                        <li>Chọn vùng cần dịch và sử dụng "Dịch vùng chọn"</li>
+                    </ol>
+                    
+                    <h3>🔒 Bảo mật:</h3>
+                    <ul>
+                        <li>API Keys được lưu trong User Properties (chỉ bạn mới thấy)</li>
+                        <li>Sử dụng menu "🔒 Bảo mật API Keys" để di chuyển keys cũ</li>
+                        <li>Kiểm tra bảo mật với "🔍 Kiểm tra bảo mật"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedLanguage = 'Vietnamese';
+        let selectedModel = 'gemma-3-4b-it';
+        let geminiApiKey = '';
+        let openaiApiKey = '';
+
+        // Available models
+        const AVAILABLE_MODELS = {
+            'gemini-2.0-flash-lite': {
+                name: 'Gemini 2.0 Flash Lite',
+                url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent',
+                cost: 'Chi phí cao',
+                quality: 'Tốt nhất',
+                provider: 'Google'
+            },
+            'gemma-3-4b-it': {
+                name: 'Gemma 3 4B IT',
+                url: 'https://generativelanguage.googleapis.com/v1beta/models/gemma-3-4b-it:generateContent',
+                cost: 'Tiết kiệm',
+                quality: 'Tốt',
+                provider: 'Google'
+            },
+            'gpt-4o': {
+                name: 'GPT-4o',
+                url: 'https://api.openai.com/v1/chat/completions',
+                cost: 'Chi phí cao',
+                quality: 'Tốt nhất',
+                provider: 'OpenAI'
+            },
+            'gpt-4o-mini': {
+                name: 'GPT-4o Mini',
+                url: 'https://api.openai.com/v1/chat/completions',
+                cost: 'Chi phí trung bình',
+                quality: 'Tốt',
+                provider: 'OpenAI'
+            },
+            'gpt-3.5-turbo': {
+                name: 'GPT-3.5 Turbo',
+                url: 'https://api.openai.com/v1/chat/completions',
+                cost: 'Tiết kiệm',
+                quality: 'Khá',
+                provider: 'OpenAI'
+            }
+        };
+
+        // Load API Keys from localStorage
+        function loadApiKeys() {
+            geminiApiKey = localStorage.getItem('gemini_api_key') || '';
+            openaiApiKey = localStorage.getItem('openai_api_key') || '';
+            document.getElementById('geminiApiKey').value = geminiApiKey;
+            document.getElementById('openaiApiKey').value = openaiApiKey;
+            updateApiKeyStatus();
+        }
+
+        // Load selected model from localStorage
+        function loadSelectedModel() {
+            const savedModel = localStorage.getItem('selected_model') || 'gemma-3-4b-it';
+            selectModel(document.querySelector(`[data-model="${savedModel}"]`));
+        }
+
+        // Save API Keys
+        function saveApiKeys() {
+            const newGeminiApiKey = document.getElementById('geminiApiKey').value.trim();
+            const newOpenaiApiKey = document.getElementById('openaiApiKey').value.trim();
+            
+            if (!newGeminiApiKey && !newOpenaiApiKey) {
+                showMessage('apiKeyStatus', 'Vui lòng nhập ít nhất một API Key!', 'error');
+                return;
+            }
+            
+            if (newGeminiApiKey && !newGeminiApiKey.startsWith('AIza')) {
+                showMessage('apiKeyStatus', 'Gemini API Key không đúng định dạng!', 'error');
+                return;
+            }
+            
+            if (newOpenaiApiKey && !newOpenaiApiKey.startsWith('sk-')) {
+                showMessage('apiKeyStatus', 'OpenAI API Key không đúng định dạng!', 'error');
+                return;
+            }
+            
+            geminiApiKey = newGeminiApiKey;
+            openaiApiKey = newOpenaiApiKey;
+            
+            localStorage.setItem('gemini_api_key', geminiApiKey);
+            localStorage.setItem('openai_api_key', openaiApiKey);
+            
+            showMessage('apiKeyStatus', 'API Keys đã được lưu thành công!', 'success');
+        }
+
+        // Update API Key status
+        function updateApiKeyStatus() {
+            const modelInfo = AVAILABLE_MODELS[selectedModel];
+            let status = '';
+            
+            if (modelInfo.provider === 'Google' && geminiApiKey) {
+                status += '✅ Gemini API Key đã cài đặt<br>';
+            } else if (modelInfo.provider === 'Google' && !geminiApiKey) {
+                status += '❌ Cần Gemini API Key cho Google models<br>';
+            }
+            
+            if (modelInfo.provider === 'OpenAI' && openaiApiKey) {
+                status += '✅ OpenAI API Key đã cài đặt<br>';
+            } else if (modelInfo.provider === 'OpenAI' && !openaiApiKey) {
+                status += '❌ Cần OpenAI API Key cho OpenAI models<br>';
+            }
+            
+            if (status) {
+                showMessage('apiKeyStatus', status, 'success');
+            } else {
+                showMessage('apiKeyStatus', '❌ Chưa cài đặt API Key nào', 'error');
+            }
+        }
+
+        // Select model
+        function selectModel(element) {
+            // Remove previous selection
+            document.querySelectorAll('.model-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            element.classList.add('selected');
+            selectedModel = element.dataset.model;
+            
+            // Save to localStorage
+            localStorage.setItem('selected_model', selectedModel);
+            
+            // Update current model info
+            updateCurrentModelInfo();
+            
+            // Update API key status
+            updateApiKeyStatus();
+        }
+
+        // Update current model info
+        function updateCurrentModelInfo() {
+            const modelInfo = AVAILABLE_MODELS[selectedModel];
+            const infoElement = document.getElementById('currentModelInfo');
+            infoElement.innerHTML = `Model hiện tại: <strong>${modelInfo.name}</strong> (${modelInfo.cost}) - ${modelInfo.provider}`;
+        }
+
+        // Select language
+        function selectLanguage(element) {
+            // Remove previous selection
+            document.querySelectorAll('.language-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            element.classList.add('selected');
+            selectedLanguage = element.dataset.lang;
+        }
+
+        // Show message
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
+        }
+
+        // Translate text
+        async function translateText() {
+            const modelInfo = AVAILABLE_MODELS[selectedModel];
+            
+            if (modelInfo.provider === 'Google' && !geminiApiKey) {
+                showMessage('translationResult', 'Vui lòng cài đặt Gemini API Key trước!', 'error');
+                return;
+            }
+            
+            if (modelInfo.provider === 'OpenAI' && !openaiApiKey) {
+                showMessage('translationResult', 'Vui lòng cài đặt OpenAI API Key trước!', 'error');
+                return;
+            }
+
+            const sourceText = document.getElementById('sourceText').value.trim();
+            if (!sourceText) {
+                showMessage('translationResult', 'Vui lòng nhập text cần dịch!', 'error');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('translateBtn').disabled = true;
+            document.getElementById('translationResult').innerHTML = 'Đang dịch...';
+
+            try {
+                const translatedText = await callTranslationAPI(sourceText, selectedLanguage);
+                document.getElementById('translationResult').innerHTML = translatedText;
+            } catch (error) {
+                document.getElementById('translationResult').innerHTML = `Lỗi: ${error.message}`;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('translateBtn').disabled = false;
+            }
+        }
+
+        // Call Translation API
+        async function callTranslationAPI(text, targetLanguage) {
+            const modelInfo = AVAILABLE_MODELS[selectedModel];
+            
+            if (modelInfo.provider === 'OpenAI') {
+                return await callOpenAIAPI(text, targetLanguage);
+            } else {
+                return await callGeminiAPI(text, targetLanguage);
+            }
+        }
+
+        // Call OpenAI API
+        async function callOpenAIAPI(text, targetLanguage) {
+            const modelInfo = AVAILABLE_MODELS[selectedModel];
+            const prompt = `Translate the following text to ${targetLanguage}. Return only the translation without any additional text or formatting: "${text}"`;
+            
+            const payload = {
+                model: selectedModel,
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                temperature: 0.3,
+                max_tokens: 1000
+            };
+
+            const response = await fetch(modelInfo.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${openaiApiKey}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'Lỗi OpenAI API');
+            }
+
+            const data = await response.json();
+            
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+                return data.choices[0].message.content.trim();
+            } else {
+                throw new Error('Không nhận được phản hồi hợp lệ từ OpenAI API');
+            }
+        }
+
+        // Call Gemini/Gemma API
+        async function callGeminiAPI(text, targetLanguage) {
+            const modelInfo = AVAILABLE_MODELS[selectedModel];
+            let prompt;
+            if (selectedModel === 'gemma-3-4b-it') {
+                prompt = `Translate this text to ${targetLanguage}. Return only the translation: "${text}"`;
+            } else {
+                prompt = `Dịch đoạn text sau sang tiếng ${targetLanguage}. Chỉ trả về bản dịch, không thêm giải thích hay dấu ngoặc kép: ${text}`;
+            }
+
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            };
+
+            const response = await fetch(modelInfo.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': geminiApiKey
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'Lỗi Google API');
+            }
+
+            const data = await response.json();
+            
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                return data.candidates[0].content.parts[0].text.trim();
+            } else {
+                throw new Error('Không nhận được phản hồi hợp lệ từ Google API');
+            }
+        }
+
+        // Test API
+        async function testApi() {
+            const modelInfo = AVAILABLE_MODELS[selectedModel];
+            
+            if (modelInfo.provider === 'Google' && !geminiApiKey) {
+                showMessage('testResult', 'Vui lòng cài đặt Gemini API Key trước!', 'error');
+                return;
+            }
+            
+            if (modelInfo.provider === 'OpenAI' && !openaiApiKey) {
+                showMessage('testResult', 'Vui lòng cài đặt OpenAI API Key trước!', 'error');
+                return;
+            }
+
+            try {
+                const result = await callTranslationAPI('Hello', 'Vietnamese');
+                showMessage('testResult', `✅ API hoạt động tốt với ${modelInfo.name}! Test: "Hello" -> "${result}"`, 'success');
+            } catch (error) {
+                showMessage('testResult', `❌ Lỗi API: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadApiKeys();
+            loadSelectedModel();
+        });
+    </script>
+</body>
+</html> 
