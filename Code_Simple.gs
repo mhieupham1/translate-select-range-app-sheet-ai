@@ -581,20 +581,20 @@ function translateTextChunk(texts, targetLanguage = 'Vietnamese') {
   let prompt;
   if (modelInfo.provider === 'OpenAI') {
     // OpenAI GPT models - sử dụng "|||" separator
-    prompt = `Translate the following texts to ${targetLanguage}. Return only the translations, separated by "|||":\n\n`;
+    prompt = `Translate the following texts to ${targetLanguage}. Each text may contain multiple lines or paragraphs - treat each numbered item as ONE complete text. Return only the translations, separated by "|||":\n\n`;
     for (let i = 0; i < texts.length; i++) {
-      prompt += `${i + 1}. ${texts[i]}\n`;
+      prompt += `${i + 1}. ${texts[i]}\n\n`;
     }
   } else {
     // Google models - sử dụng "|||" separator
     if (selectedModel === 'gemma-3-4b-it') {
-      prompt = `Translate the following texts to ${targetLanguage}. Return only the translations, separated by "|||":\n\n`;
+      prompt = `Translate the following texts to ${targetLanguage}. Each text may contain multiple lines - treat each numbered item as ONE complete text. Return only the translations, separated by "|||":\n\n`;
     } else {
-      prompt = `Dịch các đoạn text sau sang tiếng ${targetLanguage}. Chỉ trả về bản dịch, phân cách bằng "|||":\n\n`;
+      prompt = `Dịch các đoạn text sau sang tiếng ${targetLanguage}. Mỗi đoạn text có thể có nhiều dòng - coi mỗi mục đánh số là MỘT văn bản hoàn chỉnh. Chỉ trả về bản dịch, phân cách bằng "|||":\n\n`;
     }
     
     for (let i = 0; i < texts.length; i++) {
-      prompt += `${i + 1}. ${texts[i]}\n`;
+      prompt += `${i + 1}. ${texts[i]}\n\n`;
     }
   }
   
@@ -686,6 +686,52 @@ function translateTextChunk(texts, targetLanguage = 'Vietnamese') {
       }
       
       console.log(`✅ Chunk dịch thành công: ${texts.length} text -> ${translatedParts.length} kết quả`);
+      
+      // Xử lý trường hợp số kết quả không khớp với số input
+      if (translatedParts.length !== texts.length) {
+        console.log(`⚠️ Cảnh báo: Số kết quả (${translatedParts.length}) không khớp với số input (${texts.length})`);
+        
+        // Nếu có nhiều kết quả hơn input, ghép lại
+        if (translatedParts.length > texts.length) {
+          const adjustedResults = [];
+          let currentIndex = 0;
+          
+          for (let i = 0; i < texts.length; i++) {
+            if (currentIndex < translatedParts.length) {
+              // Kiểm tra xem text gốc có xuống dòng không
+              const originalText = texts[i];
+              const lineCount = (originalText.match(/\n/g) || []).length + 1;
+              
+              if (lineCount > 1 && currentIndex + lineCount <= translatedParts.length) {
+                // Ghép các kết quả tương ứng với số dòng
+                const combinedResult = translatedParts.slice(currentIndex, currentIndex + lineCount).join('\n');
+                adjustedResults.push(combinedResult);
+                currentIndex += lineCount;
+              } else {
+                // Lấy kết quả đầu tiên
+                adjustedResults.push(translatedParts[currentIndex]);
+                currentIndex++;
+              }
+            } else {
+              // Không đủ kết quả, giữ nguyên text gốc
+              adjustedResults.push(texts[i]);
+            }
+          }
+          
+          console.log(`🔄 Đã điều chỉnh kết quả: ${translatedParts.length} -> ${adjustedResults.length}`);
+          return adjustedResults;
+        }
+        
+        // Nếu có ít kết quả hơn input, bổ sung text gốc
+        if (translatedParts.length < texts.length) {
+          const adjustedResults = [...translatedParts];
+          for (let i = translatedParts.length; i < texts.length; i++) {
+            adjustedResults.push(texts[i]); // Giữ nguyên text gốc
+          }
+          console.log(`🔄 Đã bổ sung text gốc cho các kết quả thiếu`);
+          return adjustedResults;
+        }
+      }
       
       return translatedParts;
       
